@@ -118,11 +118,11 @@ func (e Error) Error() string {
 GetFilms gets the film details for the available sources
 
 Available source :
-	1. recent_films -
-	2. most_viewed -
-	3. most_liked -
-	4. toprated -
-	5. trending_films -
+	1. recent_films - film data which has been updated recently
+	2. most_viewed - film data which has high number of views
+	3. most_liked - film data which has high number of likes
+	4. toprated - film data which has high ratings
+	5. trending_films - film data which has been updated recently and has high views
 
 */
 func (s *Shortfundly) GetFilms(source string, pageNo ...int) (*Films, error) {
