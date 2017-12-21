@@ -115,143 +115,36 @@ func (e Error) Error() string {
 }
 
 // GetTrendingFilms returns the film data which has been updated recently and has high views
-func (s *Shortfundly) GetTrendingFilms(pageNo ...int) (*Films, error) {
+func (s *Shortfundly) GetTrendingFilms(count ...int) ([]FilmResults, error) {
 	var (
+		result = make([]FilmResults, 0)
+		err    error
 		r      CRequest
 		params = url.Values{}
 	)
-	if pageNo == nil {
+	if count == nil || count[0] < 5 {
 		r = CRequest{
 			Method: "GET",
 			Path:   "film/trending_films",
 		}
 	} else {
-		params.Set("p", strconv.Itoa(pageNo[0]))
-		r = CRequest{
-			Method: "GET",
-			Path:   fmt.Sprintf("film/trending_films?%v", params.Encode()),
-		}
-	}
-	films := &Films{}
-	err := s.SendRequest(r, &films)
-	return films, err
-}
-
-// GetTopRatedFilms returns the high rating films
-func (s *Shortfundly) GetTopRatedFilms(pageNo ...int) (*Films, error) {
-	var (
-		r      CRequest
-		params = url.Values{}
-	)
-	if pageNo == nil {
-		r = CRequest{
-			Method: "GET",
-			Path:   "film/toprated",
-		}
-	} else {
-		params.Set("p", strconv.Itoa(pageNo[0]))
-		r = CRequest{
-			Method: "GET",
-			Path:   fmt.Sprintf("film/toprated?%v", params.Encode()),
-		}
-	}
-	films := &Films{}
-	err := s.SendRequest(r, &films)
-	return films, err
-}
-
-// GetMostViewedFilms returns film data which has more number of views
-func (s *Shortfundly) GetMostViewedFilms(pageNo ...int) (*Films, error) {
-	var (
-		r      CRequest
-		params = url.Values{}
-	)
-	if pageNo == nil {
-		r = CRequest{
-			Method: "GET",
-			Path:   "film/most_viewed",
-		}
-	} else {
-		params.Set("p", strconv.Itoa(pageNo[0]))
-		r = CRequest{
-			Method: "GET",
-			Path:   fmt.Sprintf("film/most_viewed?%v", params.Encode()),
-		}
-	}
-	films := &Films{}
-	err := s.SendRequest(r, &films)
-	return films, err
-}
-
-// GetMostLikedFilms returns film data which has more number of likes
-func (s *Shortfundly) GetMostLikedFilms(pageNo ...int) (*Films, error) {
-	var (
-		r      CRequest
-		params = url.Values{}
-	)
-	if pageNo == nil {
-		r = CRequest{
-			Method: "GET",
-			Path:   "film/most_liked",
-		}
-	} else {
-		params.Set("p", strconv.Itoa(pageNo[0]))
-		r = CRequest{
-			Method: "GET",
-			Path:   fmt.Sprintf("film/most_liked?%v", params.Encode()),
-		}
-	}
-	films := &Films{}
-	err := s.SendRequest(r, &films)
-	return films, err
-}
-
-/*
-GetRecentFilms returns the recent films with respect to available languages
-
-Available languages :
-	1. tamil
-	2. malayalam
-	3. telugu
-	4. kannada
-
-	Note : language field is valid only for recent source
-*/
-func (s *Shortfundly) GetRecentFilms(language string, pageNo ...int) (*Films, error) {
-	var (
-		r      CRequest
-		params = url.Values{}
-	)
-	language = strings.ToLower(language)
-	switch language {
-	case "all":
-		if pageNo == nil {
-			r = CRequest{
-				Method: "GET",
-				Path:   "film/recent_films",
+		if count[0] >= 5 {
+			pageNo := count[0] / 5
+			for i := 1; i <= pageNo; i++ {
+				params.Set("p", strconv.Itoa(i))
+				// fmt.Println(fmt.Sprintf("%s,/film/trending_films?%v", host, params.Encode()))
+				r = CRequest{
+					Method: "GET",
+					Path:   fmt.Sprintf("film/trending_films?%v", params.Encode()),
+				}
+				films := &Films{}
+				err = s.SendRequest(r, &films)
+				result = append(result, films.Result...)
 			}
-		} else {
-			params.Set("p", strconv.Itoa(pageNo[0]))
-			r = CRequest{
-				Method: "GET",
-				Path:   fmt.Sprintf("film/recent_films?%v", params.Encode()),
-			}
-		}
-	default:
-		if pageNo == nil {
-			r = CRequest{
-				Method: "GET",
-				Path:   fmt.Sprintf("film/recent_%s", language),
-			}
-		} else {
-			params.Set("p", strconv.Itoa(pageNo[0]))
-			r = CRequest{
-				Method: "GET",
-				Path:   fmt.Sprintf("film/recent_%s?%v", language, params.Encode()),
-			}
+			return result, err
 		}
 	}
 	films := &Films{}
-	err := s.SendRequest(r, &films)
-	return films, err
+	err = s.SendRequest(r, &films)
+	return films.Result, err
 }
