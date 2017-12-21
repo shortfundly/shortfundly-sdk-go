@@ -80,7 +80,7 @@ func New(key string) *Shortfundly {
 func (s *Shortfundly) SendRequest(r CRequest, data interface{}) error {
 	req, err := http.NewRequest(r.Method, fmt.Sprintf("%s/%s", s.Host, r.Path), strings.NewReader(""))
 	if err != nil {
-		return fmt.Errorf("Unable to create the request: %s", err)
+		return Error{ErrMessage: fmt.Sprintf("Unable to create the request: %s", err)}
 	}
 
 	req.Header.Add("Content-Type", "application/json")
@@ -90,14 +90,14 @@ func (s *Shortfundly) SendRequest(r CRequest, data interface{}) error {
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("Failed to make request: %s", err)
+		return Error{ErrMessage: fmt.Sprintf("Failed to make request: %s", err)}
 	}
 
 	defer resp.Body.Close()
 
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("Could not read response: %s", err)
+		return Error{ErrMessage: fmt.Sprintf("Could not read response: %s", err)}
 	}
 
 	if resp.StatusCode == http.StatusOK {
@@ -106,7 +106,7 @@ func (s *Shortfundly) SendRequest(r CRequest, data interface{}) error {
 
 	errg := Error{}
 	json.Unmarshal(contents, &errg)
-	return Error{errg.Status, errg.ErrMessage}
+	return Error{ErrMessage: errg.ErrMessage}
 }
 
 // Error returns a string representing the error, satisfying the error interface.
@@ -114,30 +114,91 @@ func (e Error) Error() string {
 	return fmt.Sprintf("Error: %v", e.ErrMessage)
 }
 
-/*
-GetFilms gets the film details for the available sources
-
-Available source :
-	1. recent_films - film data which has been updated recently
-	2. most_viewed - film data which has high number of views
-	3. most_liked - film data which has high number of likes
-	4. toprated - film data which has high ratings
-	5. trending_films - film data which has been updated recently and has high views
-
-*/
-func (s *Shortfundly) GetFilms(source string, pageNo ...int) (*Films, error) {
-	var r CRequest
-	params := url.Values{}
+// GetTrendingFilms returns the film data which has been updated recently and has high views
+func (s *Shortfundly) GetTrendingFilms(pageNo ...int) (*Films, error) {
+	var (
+		r      CRequest
+		params = url.Values{}
+	)
 	if pageNo == nil {
 		r = CRequest{
 			Method: "GET",
-			Path:   fmt.Sprintf("film/%s", source),
+			Path:   "film/trending_films",
 		}
 	} else {
 		params.Set("p", strconv.Itoa(pageNo[0]))
 		r = CRequest{
 			Method: "GET",
-			Path:   fmt.Sprintf("film/%s?%v", source, params.Encode()),
+			Path:   fmt.Sprintf("film/trending_films?%v", params.Encode()),
+		}
+	}
+	films := &Films{}
+	err := s.SendRequest(r, &films)
+	return films, err
+}
+
+// GetTopRatedFilms returns the high rating films
+func (s *Shortfundly) GetTopRatedFilms(pageNo ...int) (*Films, error) {
+	var (
+		r      CRequest
+		params = url.Values{}
+	)
+	if pageNo == nil {
+		r = CRequest{
+			Method: "GET",
+			Path:   "film/toprated",
+		}
+	} else {
+		params.Set("p", strconv.Itoa(pageNo[0]))
+		r = CRequest{
+			Method: "GET",
+			Path:   fmt.Sprintf("film/toprated?%v", params.Encode()),
+		}
+	}
+	films := &Films{}
+	err := s.SendRequest(r, &films)
+	return films, err
+}
+
+// GetMostViewedFilms returns film data which has more number of views
+func (s *Shortfundly) GetMostViewedFilms(pageNo ...int) (*Films, error) {
+	var (
+		r      CRequest
+		params = url.Values{}
+	)
+	if pageNo == nil {
+		r = CRequest{
+			Method: "GET",
+			Path:   "film/most_viewed",
+		}
+	} else {
+		params.Set("p", strconv.Itoa(pageNo[0]))
+		r = CRequest{
+			Method: "GET",
+			Path:   fmt.Sprintf("film/most_viewed?%v", params.Encode()),
+		}
+	}
+	films := &Films{}
+	err := s.SendRequest(r, &films)
+	return films, err
+}
+
+// GetMostLikedFilms returns film data which has more number of likes
+func (s *Shortfundly) GetMostLikedFilms(pageNo ...int) (*Films, error) {
+	var (
+		r      CRequest
+		params = url.Values{}
+	)
+	if pageNo == nil {
+		r = CRequest{
+			Method: "GET",
+			Path:   "film/most_liked",
+		}
+	} else {
+		params.Set("p", strconv.Itoa(pageNo[0]))
+		r = CRequest{
+			Method: "GET",
+			Path:   fmt.Sprintf("film/most_liked?%v", params.Encode()),
 		}
 	}
 	films := &Films{}

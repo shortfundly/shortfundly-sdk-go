@@ -28,22 +28,32 @@ func main() {
 
 	// Initialise your application key to start the application
 	s := shortfundly.New("YOUR_API_KEY")
+	
+	// Each page contains five list of film details
 
 	// trending gets the trending film data
-	trending, err := s.GetFilms("trending_films")
+	trending, err := s.GetTrendingFilms()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println(trending)
 
-	// recent gets the recent uploaded film data in the pageNo of 265
-	recent, err := s.GetFilms("recent_films", 265)
+	// trending gets the trending film data in the page number of 2
+	trending2, err := s.GetTrendingFilms(2)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(recent)
+	fmt.Println(trending2)
+
+	// topRated gets the high rating film data in the pageNo of 265
+	topRated, err := s.GetTopRatedFilms(265)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(topRated)
 
 	// recentTamil gets the recent tamil uploaded film data
 	recentTamil, err := s.GetRecentFilms("tamil")
