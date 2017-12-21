@@ -1,6 +1,19 @@
 # shortfundly-sdk-go
 A Golang SDK for Shortfundly API
 
+## Installation
+```go
+go get github.com/shortfundly/shortfundly-sdk-go
+```
+
+## Avalailable Languages
+```
+1. Tamil
+2. Malayalam
+3. Kannada
+4. Telugu
+```
+## Example
 ```go
 
 package main

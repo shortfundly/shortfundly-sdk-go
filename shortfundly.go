@@ -157,8 +157,11 @@ Available languages :
 	Note : language field is valid only for recent source
 */
 func (s *Shortfundly) GetRecentFilms(language string, pageNo ...int) (*Films, error) {
-	var r CRequest
-	params := url.Values{}
+	var (
+		r      CRequest
+		params = url.Values{}
+	)
+	language = strings.ToLower(language)
 	switch language {
 	case "all":
 		if pageNo == nil {
