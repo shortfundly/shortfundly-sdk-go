@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -78,6 +79,7 @@ func New(key string) *Shortfundly {
 
 // SendRequest makes a request to Shortfundly's API
 func (s *Shortfundly) SendRequest(r CRequest, data interface{}) error {
+	fmt.Println(fmt.Sprintf("%s/%s", s.Host, r.Path))
 	req, err := http.NewRequest(r.Method, fmt.Sprintf("%s/%s", s.Host, r.Path), strings.NewReader(""))
 	if err != nil {
 		return Error{ErrMessage: fmt.Sprintf("Unable to create the request: %s", err)}
@@ -115,36 +117,70 @@ func (e Error) Error() string {
 }
 
 // GetTrendingFilms returns the film data which has been updated recently and has high views
-func (s *Shortfundly) GetTrendingFilms(count ...int) ([]FilmResults, error) {
+func (s *Shortfundly) GetTrendingFilms(count int) ([]FilmResults, error) {
+	fmt.Println(count)
 	var (
+		films  = &Films{}
 		result = make([]FilmResults, 0)
 		err    error
 		r      CRequest
 		params = url.Values{}
 	)
-	if count == nil || count[0] < 5 {
+	if count == 0 {
 		r = CRequest{
 			Method: "GET",
 			Path:   "film/trending_films",
 		}
+		err = s.SendRequest(r, &films)
+		return films.Result, err
 	} else {
-		if count[0] >= 5 {
-			pageNo := count[0] / 5
-			for i := 1; i <= pageNo; i++ {
-				params.Set("p", strconv.Itoa(i))
-				// fmt.Println(fmt.Sprintf("%s,/film/trending_films?%v", host, params.Encode()))
+		pageNo := count / 5
+		pageNo++
+		fmt.Println(pageNo)
+
+		// result = append(result, films.Result...)
+		resultCh := make(chan []FilmResults)
+		quit := make(chan bool, 1)
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+		go func() {
+			for {
+				select {
+				case rslts := <-resultCh:
+					result = append(result, rslts...)
+				case <-quit:
+					wg.Done()
+				}
+
+			}
+		}()
+
+		loopWg := sync.WaitGroup{}
+		fmt.Println("---", pageNo)
+
+		for i := 1; i <= pageNo; i++ {
+			loopWg.Add(1)
+			go func(pgNum int) {
+
+				params.Set("p", strconv.Itoa(pgNum))
 				r = CRequest{
 					Method: "GET",
 					Path:   fmt.Sprintf("film/trending_films?%v", params.Encode()),
 				}
-				films := &Films{}
 				err = s.SendRequest(r, &films)
-				result = append(result, films.Result...)
-			}
-			return result, err
+				if pgNum == pageNo {
+					remainingCount := count - (pgNum-1)*5
+					resultCh <- films.Result[0:remainingCount]
+				} else {
+					resultCh <- films.Result
+				}
+
+				loopWg.Done()
+			}(i)
 		}
+		loopWg.Wait()
+		quit <- true
+		wg.Wait()
+		return result, err
 	}
-	films := &Films{}
-	err = s.SendRequest(r, &films)
-	return films.Result, err
 }
