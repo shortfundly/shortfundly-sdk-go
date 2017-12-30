@@ -32,20 +32,12 @@ func main() {
 	// Each page contains five list of film details
 
 	// trending gets the trending film data
-	trending, err := s.GetTrendingFilms()
+	trending, err := s.GetTrendingFilms(3)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println(trending)
-
-	// trending gets the trending film data in the page number of 2
-	trending2, err := s.GetTrendingFilms(2)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(trending2)
 
 	// topRated gets the high rating film data in the pageNo of 265
 	topRated, err := s.GetTopRatedFilms(265)
@@ -56,7 +48,7 @@ func main() {
 	fmt.Println(topRated)
 
 	// recentTamil gets the recent tamil uploaded film data
-	recentTamil, err := s.GetRecentFilms("tamil")
+	recentTamil, err := s.GetRecentFilms("all", 5)
 	if err != nil {
 		fmt.Println(err)
 		return
