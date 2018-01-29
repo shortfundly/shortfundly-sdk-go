@@ -68,44 +68,16 @@ Available languages :
 	Note : language field is valid only for recent source
 */
 func (s *Shortfundly) GetRecentFilms(language string, pageNo int) (*Films, error) {
-	var (
-		r      CRequest
-		params = url.Values{}
-	)
 	language = strings.ToLower(language)
 	switch language {
 	case "all":
-		if pageNo == 0 {
-			r = CRequest{
-				Method: "GET",
-				Path:   "film/recent_films",
-			}
-		} else {
-			params.Set("p", strconv.Itoa(pageNo))
-			r = CRequest{
-				Method: "GET",
-				Path:   fmt.Sprintf("film/recent_films?%v", params.Encode()),
-			}
-		}
+		return s.filmsCommon(pageNo, "recent_films")
 	default:
-		if pageNo == 0 {
-			r = CRequest{
-				Method: "GET",
-				Path:   fmt.Sprintf("film/recent_%s", language),
-			}
-		} else {
-			params.Set("p", strconv.Itoa(pageNo))
-			r = CRequest{
-				Method: "GET",
-				Path:   fmt.Sprintf("film/recent_%s?%v", language, params.Encode()),
-			}
-		}
+		return s.filmsCommon(pageNo, "recent_"+language)
 	}
-	films := &Films{}
-	err := s.sendRequest(r, &films)
-	return films, err
 }
 
+// filmsCommon returns the film details
 func (s *Shortfundly) filmsCommon(pageNo int, filmData string) (*Films, error) {
 	var (
 		r      CRequest

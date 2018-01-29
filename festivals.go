@@ -6,12 +6,14 @@ import (
 	"strconv"
 )
 
+// Festivals defines the festival data
 type Festivals struct {
 	Count   int64             `json:"count"`
 	Status  bool              `json:"status"`
 	Results []FestivalResults `json:"results"`
 }
 
+// FestivalResults defines the festival content results
 type FestivalResults struct {
 	PkID             string `json:"pk_id"`
 	Headline         string `json:"headline"`
@@ -50,32 +52,32 @@ type FestivalResults struct {
 	Sharableurl      string `json:"sharableurl"`
 }
 
-// GetTodayFestival returns the film data which has been updated recently and has high views
+// GetTodayFestival returns the festival data which has been updated today
 func (s *Shortfundly) GetTodayFestival(pageNo int) (*Festivals, error) {
 	return s.festiCommon(pageNo, "today")
 }
 
-// GetYesterdayFestival returns the film data which has been updated recently and has high views
+// GetYesterdayFestival returns the festival data which has been updated yesterday
 func (s *Shortfundly) GetYesterdayFestival(pageNo int) (*Festivals, error) {
 	return s.festiCommon(pageNo, "yesterday")
 }
 
-// GetThisWeekFestival returns the film data which has been updated recently and has high views
+// GetThisWeekFestival returns the festival data which has been updated this week
 func (s *Shortfundly) GetThisWeekFestival(pageNo int) (*Festivals, error) {
 	return s.festiCommon(pageNo, "thisweek")
 }
 
-// GetLastWeekFestival returns the film data which has been updated recently and has high views
+// GetLastWeekFestival returns the festival data which has been updated last week
 func (s *Shortfundly) GetLastWeekFestival(pageNo int) (*Festivals, error) {
 	return s.festiCommon(pageNo, "lastweek")
 }
 
-// GetThisMonthFestival returns the film data which has been updated recently and has high views
+// GetThisMonthFestival returns the festival data which has been updated this month
 func (s *Shortfundly) GetThisMonthFestival(pageNo int) (*Festivals, error) {
 	return s.festiCommon(pageNo, "thismonth")
 }
 
-// GetLastMonthFestival returns the film data which has been updated recently and has high views
+// GetLastMonthFestival returns the festival data which has been updated last month
 func (s *Shortfundly) GetLastMonthFestival(pageNo int) (*Festivals, error) {
 	return s.festiCommon(pageNo, "lastmonth")
 }
