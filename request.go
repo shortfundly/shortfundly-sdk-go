@@ -1,6 +1,5 @@
 package shortfundly
 
-// SendRequest makes a request to Shortfundly's API
 import (
 	"encoding/json"
 	"fmt"
@@ -15,8 +14,8 @@ type CRequest struct {
 	Path   string
 }
 
-// SendRequest makes the request to Shortfundly's API
-func (s *Shortfundly) SendRequest(r CRequest, data interface{}) error {
+// sendRequest makes the request to Shortfundly's API
+func (s *Shortfundly) sendRequest(r CRequest, data interface{}) error {
 	req, err := http.NewRequest(r.Method, fmt.Sprintf("%s/%s", s.Host, r.Path), strings.NewReader(""))
 	if err != nil {
 		return Error{ErrMessage: fmt.Sprintf("Unable to create the request: %s", err)}
